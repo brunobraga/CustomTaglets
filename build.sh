@@ -28,7 +28,10 @@
 #
 
 # build the taglets
-javac -classpath /usr/lib/jvm/java-6-openjdk/lib/tools.jar src/com/customtaglet/*
+javac \
+-classpath /usr/lib/jvm/java-6-openjdk/lib/tools.jar \
+-d bin/ \
+src/com/customtaglet/*
 
 # build documentation
 javadoc \

@@ -1,4 +1,31 @@
 #!/usr/bin/python
+#
+# File:         prettify.py
+#
+# Purpose:      Simple dirty script to use the prettify in javadoc generated files
+#
+# Author:       BRAGA, Bruno <bruno.braga@gmail.com>
+#
+# Copyright:
+#
+#               Licensed under the Apache License, Version 2.0 (the "License");
+#               you may not use this file except in compliance with the License.
+#               You may obtain a copy of the License at
+#
+#               http://www.apache.org/licenses/LICENSE-2.0
+#
+#               Unless required by applicable law or agreed to in writing, software
+#               distributed under the License is distributed on an "AS IS" BASIS,
+#               WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#               implied. See the License for the specific language governing
+#               permissions and limitations under the License.
+#
+# Notes:        This file is part of the project CustomTaglets. More info at:
+#               https://github.com/brunobraga/CustomTaglets
+#  
+#               Bugs, issues and requests are welcome at:
+#               https://github.com/brunobraga/CustomTaglets/issues
+#
 
 import os
 import sys
@@ -26,8 +53,10 @@ DOC_ROOT = "docs/"
 # 
 # location of prettify files 
 # 
-PRETTIFY_CSS_PATH = "css/prettify.css"
-PRETTIFY_JS_PATH = "js/prettify.js"
+PRETTIFY_CSS_PATH = "css/"
+PRETTIFY_JS_PATH = "js/"
+PRETTIFY_CSS = "prettify.css"
+PRETTIFY_JS = "prettify.js"
 
 # google-code-prettify
 # Latest downloads are available here
@@ -42,6 +71,8 @@ PRETTIFY_URL = "http://google-code-prettify.googlecode.com/files/prettify-small-
 def usage():
     print """
 %s version %s.
+
+Usage: %s [options]
 
 Simple dirty script to alter standard javadoc created files to use the prettify
 code, an open-source solution that enable <pre> HTML tags to be better formatted
@@ -71,7 +102,7 @@ This script is part of the open-source initiative:
     
 Author: %s 
 
-    """  % (sys.argv[0], __VERSION__, __AUTHOR__)
+    """  % (sys.argv[0], __VERSION__, sys.argv[0], __AUTHOR__)
 
 def print_start():
     """
@@ -100,7 +131,7 @@ def get_prettify():
     """
     
     # check if files are in place already
-    if not (os.path.exists(DOC_ROOT + PRETTIFY_CSS_PATH) and os.path.exists(DOC_ROOT + PRETTIFY_JS_PATH)):
+    if not (os.path.exists(DOC_ROOT + PRETTIFY_CSS_PATH + PRETTIFY_CSS) and os.path.exists(DOC_ROOT + PRETTIFY_JS_PATH + PRETTIFY_JS)):
         # download code
         temp_path = "/tmp/"
         source_path = "google-code-prettify/"
@@ -108,13 +139,21 @@ def get_prettify():
         if __verbose: print "Prettify files not found. Downloading source..."
         res = os.system("wget %s -O %s %s" % ("-v" if __verbose else "", temp_file, PRETTIFY_URL))
         if res > 0: sys.exit(2)
-        print "Unpacking..."
+        if __verbose: print "Unpacking..."
         res = os.system("tar -jx%sf %s -C /tmp/" % ("v" if __verbose else "", temp_file))
         if res > 0: sys.exit(2)
+        
+        if not os.path.exists(DOC_ROOT + PRETTIFY_CSS_PATH):
+            if __verbose: print "Creating directory for CSS/JS files..."
+            res = os.system("mkdir %s %s%s" % ("-v" if __verbose else "", DOC_ROOT, PRETTIFY_CSS_PATH))
+            if res > 0: sys.exit(2)
+            res = os.system("mkdir %s %s%s" % ("-v" if __verbose else "", DOC_ROOT, PRETTIFY_JS_PATH))
+            if res > 0: sys.exit(2)
+            
         if __verbose: print "Moving files..."
-        res = os.system("mv -f%s %s%sprettify.css %s%s" % ("v" if __verbose else "", temp_path, source_path, DOC_ROOT, PRETTIFY_CSS_PATH))
+        res = os.system("mv -f%s %s%sprettify.css %s%s%s" % ("v" if __verbose else "", temp_path, source_path, DOC_ROOT, PRETTIFY_CSS_PATH, PRETTIFY_CSS))
         if res > 0: sys.exit(2)
-        res = os.system("mv -f%s %s%sprettify.js %s%s" % ("v" if __verbose else "", temp_path, source_path, DOC_ROOT, PRETTIFY_JS_PATH))
+        res = os.system("mv -f%s %s%sprettify.js %s%s%s" % ("v" if __verbose else "", temp_path, source_path, DOC_ROOT, PRETTIFY_JS_PATH, PRETTIFY_JS))
         if res > 0: sys.exit(2)
         if __verbose: print "Removing garbage..."
         res = os.system("rm -rf%s %s%s" % ("v" if __verbose else "", temp_path, source_path))
@@ -152,9 +191,9 @@ def append(fi, depth):
     if __verbose: print "Appending to file [%s] header..." % fi
 
     header = """
-    <link href="%s%s" type="text/css" rel="stylesheet" />
-    <script type="text/javascript" src="%s%s"></script>
-    """ % ("../"*depth, PRETTIFY_CSS_PATH, "../"*depth, PRETTIFY_JS_PATH)
+    <link href="%s%s%s" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="%s%s%s"></script>
+    """ % ("../"*depth, PRETTIFY_CSS_PATH, PRETTIFY_CSS, "../"*depth, PRETTIFY_JS_PATH, PRETTIFY_JS)
     
     # get file content
     data = ""
